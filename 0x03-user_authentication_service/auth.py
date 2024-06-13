@@ -32,11 +32,12 @@ class Auth:
     def register_user(self, email: str, password: str) -> User:
         """ a function that registers users
         """
-        user = self._db.find_user_by(email=email)
-        hashed_password = _hash_password(password)
-        if user:
+        try:
+            user = self._db.find_user_by(email=email)
             raise ValueError(f'User {email} already exists')
-        return self._db.add_user(email, hashed_password)
+        except NoResultFound:
+            hashed_password = _hash_password(password)
+            return self._db.add_user(email, hashed_password)
 
     def valid_login(self, email: str, password: str) -> bool:
         """ Credentials validation """
@@ -49,22 +50,13 @@ class Auth:
         except (NoResultFound, InvalidRequestError):
             return False
         return False
-     def create_session(self, email: str) -> str:
-        """_summary_
-        
-        Args:
-            email (str): _description_
 
-        Returns:
-            str: _description_
-        """
+    def create_session(self, email: str) -> str:
+        """Create a session ID for the user with the given email."""
         try:
             user = self._db.find_user_by(email=email)
         except NoResultFound:
             return None
-        else:
-            user.session_id = _generate_uuid()
-            return user.session_id
         
         session_id = _generate_uuid()
         self._db.update_user(user.id, session_id=session_id)
