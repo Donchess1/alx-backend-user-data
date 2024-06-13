@@ -51,7 +51,7 @@ class Auth:
         return False
      def create_session(self, email: str) -> str:
         """_summary_
-
+        
         Args:
             email (str): _description_
 
@@ -65,3 +65,8 @@ class Auth:
         else:
             user.session_id = _generate_uuid()
             return user.session_id
+        
+        session_id = _generate_uuid()
+        self._db.update_user(user.id, session_id=session_id)
+        
+        return session_id
